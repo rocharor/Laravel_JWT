@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -10,11 +11,15 @@ class AuthController extends Controller
     {
         $credentials = $request->only(['email', 'password']);
 
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if (auth()->guard('api')->attempt($credentials)) {
+            $userId = auth()->guard('api')->getPayload()->get('sub');
+            $user = User::find($userId);
+            $token = auth()->guard('api')->claims(['data' => ['bar' => $user->name]])->attempt($credentials);
+
+            return $this->respondWithToken($token);
         }
 
-        return $this->respondWithToken($token);
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
 
     public function logout()

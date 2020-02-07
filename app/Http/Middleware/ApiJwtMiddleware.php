@@ -22,7 +22,7 @@ class ApiJwtMiddleware
         try {
             JWTAuth::parseToken()->authenticate();
         } catch(\Exception $e) {
-            if ($e instanceof TokenBlacklistedException) {
+            if ($e instanceof TokenBlacklistedException || $e instanceof TokenExpiredException) {
                 return response()->json(['status' => 'Token expirado.']);
             } elseif ($e instanceof TokenInvalidException) {
                 return response()->json(['status' => 'Token Inválido.']);
